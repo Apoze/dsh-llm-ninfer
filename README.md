@@ -8,6 +8,8 @@ Le plugin possède la transformation des messages, outils et images en un seul c
 
 Construire DSH et ce plugin avec Node 22.19+ ou 24+. Les dépendances Cordis et DSH doivent résoudre les mêmes instances que le runtime hôte. Installer le paquet construit dans le profil ; ne pas éditer une copie de son cache. La politique complémentaire est `dsh-generation-recovery`.
 
+Le fork qualifié utilise Cordis `4.0.2`. Ce peer doit pointer vers l'instance du fork compilé, comme les peers DSH.
+
 ```yaml
 - insert:
     - id: llm-ninfer
