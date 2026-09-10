@@ -1,0 +1,45 @@
+{
+  "name": "dsh-llm-ninfer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-llm": "0.1.5-alpha.2",
+    "@deepseek-ai/dsh-credentials": "0.1.5-alpha.2",
+    "@deepseek-ai/dsh-attachment": "0.1.5-alpha.2"
+  },
+  "dependencies": {
+    "zod": "4.4.3",
+    "openai": "6.40.0"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "description": "Native NInfer request preparation for DeepSeek Harness",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "@types/node": "22.20.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apoze/dsh-llm-ninfer.git"
+  }
+}
