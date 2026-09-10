@@ -1,6 +1,6 @@
 # dsh-llm-ninfer
 
-Adaptateur DSH pour le protocole OpenAI Chat de NInfer avec comptage natif. Nécessite la branche DSH `fix/native-generation-reliability` basée sur `0.1.5-alpha.2` et la version NInfer qui expose les diagnostics v1. Une version publiée portant seulement le même numéro sans ces changements ne suffit pas.
+Adaptateur DSH pour le protocole OpenAI Chat de NInfer avec comptage natif. Nécessite la branche DSH `integration/dsh-0.1.5-rc.1-native` basée sur `0.1.5-rc.1` et la version NInfer qui expose les diagnostics v1. Une version publiée portant seulement le même numéro sans ces changements ne suffit pas.
 
 Le plugin possède la transformation des messages, outils et images en un seul corps HTTP. Il compte ce corps via `/v1/chat/completions/count_tokens`, fige les pièces jointes en données, puis utilise la même préparation pour générer. Il ne réimplémente ni le tokenizer ni les outils. Le SDK OpenAI possède HTTP/SSE ; les nouvelles tentatives appartiennent à DSH.
 
