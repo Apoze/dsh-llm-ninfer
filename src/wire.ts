@@ -27,7 +27,7 @@ async function content(
           url: `data:${image.ref.mediaType};base64,${Buffer.from(image.data).toString('base64')}`,
         },
       })
-    } else if (block.type !== 'reasoning' && block.type !== 'tool-call' && block.type !== 'tool-result') {
+    } else if (block.type !== 'reasoning' && block.type !== 'tool-call') {
       throw new LlmError(`Unsupported NInfer content block: ${block.type}`, 'UNSUPPORTED_CONTENT')
     }
   }
@@ -39,13 +39,12 @@ export async function prepareBody(
   options: GenerateOptions,
 ): Promise<ChatCompletionCreateParamsStreaming & { enable_thinking?: boolean; reasoning_effort?: string }> {
   const messages: ChatCompletionMessageParam[] = []
-  if (options.system) messages.push({ role: 'system', content: options.system })
   for (const message of options.messages) {
     const text = message.content
       .filter((b) => b.type === 'text')
       .map((b) => b.text)
       .join('\n')
-    if (message.role === 'system') messages.push({ role: 'system', content: text })
+    if (message.role === 'system' || message.role === 'developer') messages.push({ role: message.role, content: text })
     else if (message.role === 'assistant') {
       const calls = message.content.filter((b) => b.type === 'tool-call')
       const reasoning = message.content
@@ -67,23 +66,15 @@ export async function prepareBody(
         ...(reasoning ? { reasoning_content: reasoning } : {}),
       }
       messages.push(value)
-    } else if (message.content.some((block) => block.type === 'tool-result')) {
-      for (const block of message.content) {
-        if (block.type !== 'tool-result')
-          throw new LlmError('Tool result history is malformed', 'INVALID_HISTORY')
-        const parts = await content(ctx, block.content, options.signal)
-        const text = parts
-          .filter((p) => p.type === 'text')
-          .map((p) => p.text)
-          .join('\n')
-        messages.push({ role: 'tool', tool_call_id: block.toolCallId, content: text })
-        const images = parts.filter((p) => p.type === 'image_url')
-        if (images.length)
-          messages.push({
-            role: 'user',
-            content: [{ type: 'text', text: `Images returned by tool ${block.toolCallId}:` }, ...images],
-          })
-      }
+    } else if (message.role === 'tool') {
+      const parts = await content(ctx, message.content, options.signal)
+      const result = parts.filter((p) => p.type === 'text').map((p) => p.text).join('\n')
+      messages.push({ role: 'tool', tool_call_id: message.toolCallId, content: result })
+      const images = parts.filter((p) => p.type === 'image_url')
+      if (images.length) messages.push({
+        role: 'user',
+        content: [{ type: 'text', text: `Images returned by tool ${message.toolCallId}:` }, ...images],
+      })
     } else if (message.role === 'user')
       messages.push({ role: 'user', content: await content(ctx, message.content, options.signal) })
     else throw new LlmError('Unsupported message role', 'UNSUPPORTED_CONTENT')

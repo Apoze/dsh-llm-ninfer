@@ -45,3 +45,9 @@ npm test
 ```
 
 Les tests ouvrent un vrai serveur HTTP et font passer le SDK OpenAI dans ses chemins SSE, annulation, erreur 409 et incohérence de compte. Ils vérifient les objets émis, notamment l'absence d'outil exécutable, sans rechercher des mots dans le code source. Les essais GPU et clients complets sont consignés dans le rapport de qualification du chantier.
+
+## Compatibilité DSH 0.2.0-rc.1
+
+Cette version cible les contrats V4 de DSH et Cordis 4.0.4. L’installation locale utilise le fork natif NInfer basé sur le tag officiel `dsh-v0.2.0-rc.1`. Les anciens plugins de récupération finale ne doivent pas être activés en parallèle avec `dsh-generation-recovery`.
+
+Pour développer contre le fork natif : installer les dépendances, puis exécuter `DSH_NATIVE_ROOT=/chemin/du/fork node scripts/link-native-core.mjs` avant la compilation. Les liens restent locaux dans `node_modules` ; les manifests et fichiers de verrouillage restent portables.
