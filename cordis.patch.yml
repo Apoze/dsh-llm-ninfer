@@ -1,0 +1,3 @@
+- insert:
+    - id: llm-ninfer
+      name: dsh-llm-ninfer

@@ -1,6 +1,6 @@
 # dsh-llm-ninfer
 
-Adaptateur DSH pour le protocole OpenAI Chat de NInfer avec comptage natif. Nécessite la branche DSH `integration/dsh-0.1.5-rc.1-native` basée sur `0.1.5-rc.1` et la version NInfer qui expose les diagnostics v1. Une version publiée portant seulement le même numéro sans ces changements ne suffit pas.
+Adaptateur DSH pour le protocole OpenAI Chat de NInfer avec comptage natif. Nécessite la branche DSH `integration/dsh-0.2.0-rc.1-native` basée sur `0.2.0-rc.1` et la version NInfer qui expose les diagnostics v1. Une version publiée portant seulement le même numéro sans ces changements ne suffit pas.
 
 Le plugin possède la transformation des messages, outils et images en un seul corps HTTP. Il compte ce corps via `/v1/chat/completions/count_tokens`, fige les pièces jointes en données, puis utilise la même préparation pour générer. Il ne réimplémente ni le tokenizer ni les outils. Le SDK OpenAI possède HTTP/SSE ; les nouvelles tentatives appartiennent à DSH.
 
@@ -8,23 +8,21 @@ Le plugin possède la transformation des messages, outils et images en un seul c
 
 Construire DSH et ce plugin avec Node 22.19+ ou 24+. Les dépendances Cordis et DSH doivent résoudre les mêmes instances que le runtime hôte. Installer le paquet construit dans le profil ; ne pas éditer une copie de son cache. La politique complémentaire est `dsh-generation-recovery`.
 
-Le fork qualifié utilise Cordis `4.0.2`. Ce peer doit pointer vers l'instance du fork compilé, comme les peers DSH.
+Le fork qualifié utilise Cordis `4.0.4`. Ce peer doit pointer vers l'instance du fork compilé, comme les peers DSH.
 
 ```yaml
-- insert:
-    - id: llm-ninfer
-      name: dsh-llm-ninfer
-      config:
-        provider: ninfer-local
-        baseURL: http://192.168.1.165:8888/v1
-        credentialRef: UNSLOTH_API_KEY
-        models:
-          - id: huihui-ai/Huihui-Qwen3.8-27B-abliterated-NInfer-NVFP4Full
-            contextWindow: 150000
-        contentReserve: 16384
-        safetyMargin: 4096
-        compactionThreshold: 0.7
-        requestTimeoutMs: 1800000
+- id: llm-ninfer
+  config:
+    provider: ninfer-local
+    baseURL: http://192.168.1.165:8888/v1
+    credentialRef: UNSLOTH_API_KEY
+    models:
+      - id: huihui-ai/Huihui-Qwen3.8-27B-abliterated-NInfer-NVFP4Full
+        contextWindow: 150000
+    contentReserve: 16384
+    safetyMargin: 4096
+    compactionThreshold: 0.7
+    requestTimeoutMs: 1800000
 ```
 
 Ne pas enregistrer simultanément cette route sous `llm-pi-ai`. `credentialRef` désigne une référence dans le service credentials existant ; aucune clé dans ce fichier. La capacité du serveur comptée fait autorité. Le contrôle des capacités a lieu au premier appel préparé et sur chaque préparation suivante, sans génération de démarrage.
@@ -51,3 +49,11 @@ Les tests ouvrent un vrai serveur HTTP et font passer le SDK OpenAI dans ses che
 Cette version cible les contrats V4 de DSH et Cordis 4.0.4. L’installation locale utilise le fork natif NInfer basé sur le tag officiel `dsh-v0.2.0-rc.1`. Les anciens plugins de récupération finale ne doivent pas être activés en parallèle avec `dsh-generation-recovery`.
 
 Pour développer contre le fork natif : installer les dépendances, puis exécuter `DSH_NATIVE_ROOT=/chemin/du/fork node scripts/link-native-core.mjs` avant la compilation. Les liens restent locaux dans `node_modules` ; les manifests et fichiers de verrouillage restent portables.
+
+## Gestionnaire de plugins DSH
+
+Le paquet déclare un bundle natif (`dsh.bundle.patch`) : il apparaît dans **Plugins → Installed**, avec activation/désactivation et désinstallation du profil. Installer le dossier construit avec `dsh plugin --profile web add /chemin/du/paquet`. Aucune publication GitHub ou npm n’est nécessaire.
+
+Le bundle est le seul propriétaire de l’entrée `llm-ninfer`. Ne pas conserver une ancienne directive `insert` pour cette même entrée : remplacer celle-ci par un patch `id`/`config`, sans `name`. Les réglages utilisateur restent hors du paquet. Les interrupteurs agissent sur le profil sélectionné ; ne pas désactiver pendant une génération.
+
+Configurer `baseURL`, `credentialRef` et `models` avant d’activer le bundle : ils sont obligatoires et aucun serveur ni secret n’est embarqué. `credentialRef` référence les credentials DSH, jamais une clé en clair. Désactiver ce bundle retire le fournisseur et empêche les conversations NInfer jusqu’à sa réactivation ; cela n’arrête pas le serveur GPU.
