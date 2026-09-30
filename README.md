@@ -65,4 +65,6 @@ Depuis la version **0.2.2**, ouvrir **Plugins → Installed → dsh-llm-ninfer**
 
 Les changements s’appliquent aux nouveaux appels sans redémarrage. Un appel préparé conserve sa connexion et son budget. Les doublons de modèles, URL contenant des identifiants ou paramètres, valeurs invalides et conflits de fournisseur sont refusés. Si les réglages changent ailleurs pendant une édition, recharger les valeurs avant d’enregistrer.
 
+Pour une installation existante, si `llm-ninfer` est configuré dans le patch global `DSH_HOME/cordis.patch.yml`, sauvegarder ce fichier puis déplacer cette entrée vers `DSH_HOME/profiles/<profil>/cordis.patch.yml` pour chaque profil utilisé. Conserver exactement ses valeurs et la référence de credential, puis redémarrer DSH. Le patch global a priorité sur les réglages du profil et bloque leur édition native. Les credentials restent communs ; les réglages de connexion deviennent propres à chaque profil.
+
 Le niveau de raisonnement reste dans le sélecteur de modèle de DSH ; les autres politiques de compaction restent dans les presets de l’agent. Aucun serveur ni secret n’est embarqué. Désactiver ce bundle retire le fournisseur et empêche les conversations NInfer jusqu’à sa réactivation ; cela n’arrête pas le serveur GPU.
