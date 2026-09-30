@@ -1,5 +1,5 @@
 // Use the same built native fork for every DSH peer; manifests stay portable.
-import { readFileSync, readdirSync, mkdirSync, rmSync, symlinkSync } from 'node:fs'
+import { readFileSync, readdirSync, mkdirSync, rmSync, symlinkSync, lstatSync, unlinkSync } from 'node:fs'
 import { resolve, join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 const root = process.env.DSH_NATIVE_ROOT
@@ -18,7 +18,10 @@ for(const name of wanted) {
   if(!target) throw new Error(`Missing ${name} in DSH_NATIVE_ROOT`)
   const link=join(here,'node_modules',name)
   mkdirSync(dirname(link),{recursive:true})
-  rmSync(link,{recursive:true,force:true})
-  symlinkSync(target,link,'dir')
+  if (!resolve(link).startsWith(resolve(here, 'node_modules') + (process.platform === 'win32' ? '\\' : '/'))) throw new Error('Dependency path outside node_modules')
+  const existing = lstatSync(link, { throwIfNoEntry: false })
+  if (existing?.isSymbolicLink()) unlinkSync(link)
+  else if (existing) rmSync(link,{recursive:true,force:true})
+  symlinkSync(target,link,process.platform === 'win32' ? 'junction' : 'dir')
 }
 console.log(`Linked ${wanted.size} native DSH dependencies`)

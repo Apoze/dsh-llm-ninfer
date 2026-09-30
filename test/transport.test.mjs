@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { NinferAdapter } from '../lib/adapter.js'
 import { configSchema } from '../lib/config.js'
+import { LiveNinferAdapter } from '../lib/index.js'
 const native = {
   version: 1,
   instance_id: 'instance-1',
@@ -45,8 +46,25 @@ async function setup(t, respond) {
     reasoningEffort: 'off',
     messages: [{ role: 'user', content: [{ type: 'text', text: 'écrire 🧪' }] }],
   }
-  return { adapter, options, requests }
+  return { adapter, options, requests, baseURL: `http://127.0.0.1:${server.address().port}/v1` }
 }
+test('native edits apply to new calls while a prepared call retains its endpoint and limits', async t => {
+  const first = await setup(t, (_req, res, body) => sse(res, body))
+  const second = await setup(t, (_req, res, body) => sse(res, body))
+  let settings = configSchema.parse({ baseURL: first.baseURL, credentialRef: 'TEST', models: [{ id: 'fixture', contextWindow: 150000, maxTokens: 1024 }] })
+  const adapter = new LiveNinferAdapter({ credentials: { resolve: async () => ({ value: 'fixture-key' }) } }, { get: () => settings })
+  const prepared = await adapter.prepareCall('ninfer-local', 'fixture')
+  await prepared.inspect(first.options)
+  settings = { ...settings, baseURL: second.baseURL, safetyMargin: 8192, models: [{ id: 'fixture', contextWindow: 150000, maxTokens: 2048 }] }
+  for await (const _ of prepared.stream(first.options)) {}
+  for await (const _ of adapter.stream(second.options)) {}
+  assert.equal(first.requests.length, 2)
+  assert.equal(second.requests.length, 2)
+  assert.equal(first.requests[1].body.max_tokens, 150000 - 20 - 4096)
+  assert.equal(second.requests[1].body.max_tokens, 150000 - 20 - 8192)
+  assert.equal(prepared.model.defaultMaxTokens, 1024)
+  assert.equal((await adapter.listModels('ninfer-local'))[0].defaultMaxTokens, 2048)
+})
 function sse(
   res,
   body,

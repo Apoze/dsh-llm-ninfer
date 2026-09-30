@@ -56,4 +56,13 @@ Le paquet déclare un bundle natif (`dsh.bundle.patch`) : il apparaît dans **Pl
 
 Le bundle est le seul propriétaire de l’entrée `llm-ninfer`. Ne pas conserver une ancienne directive `insert` pour cette même entrée : remplacer celle-ci par un patch `id`/`config`, sans `name`. Les réglages utilisateur restent hors du paquet. Les interrupteurs agissent sur le profil sélectionné ; ne pas désactiver pendant une génération.
 
-Configurer `baseURL`, `credentialRef` et `models` avant d’activer le bundle : ils sont obligatoires et aucun serveur ni secret n’est embarqué. `credentialRef` référence les credentials DSH, jamais une clé en clair. Désactiver ce bundle retire le fournisseur et empêche les conversations NInfer jusqu’à sa réactivation ; cela n’arrête pas le serveur GPU.
+Depuis la version **0.2.2**, ouvrir **Plugins → Installed → dsh-llm-ninfer** pour configurer le plugin directement dans le gestionnaire natif. Aucun changement du code de DSH n’est nécessaire.
+
+1. Activer le composant NInfer. Une installation vide reste configurable : aucun fournisseur n’est enregistré avant de renseigner l’URL et au moins un modèle.
+2. Saisir l’URL API (avec `/v1`), l’identifiant du fournisseur et la référence de credential, puis ajouter les modèles avec leur identifiant exact, nom facultatif, contexte et plafond de sortie facultatif.
+3. Régler la réserve de contenu, la marge, le seuil de compaction et le délai HTTP, puis **Enregistrer la configuration**. Les réglages sont persistés dans le profil DSH ouvert, hors du paquet.
+4. La section **Clé API** indique si la référence enregistrée possède déjà une clé. Laisser le champ vide la conserve ; saisir une nouvelle clé et cliquer **Enregistrer la clé** la remplace dans le service credentials natif de DSH. La clé existante n’est jamais renvoyée au formulaire. Les références en lecture seule ne sont pas modifiables.
+
+Les changements s’appliquent aux nouveaux appels sans redémarrage. Un appel préparé conserve sa connexion et son budget. Les doublons de modèles, URL contenant des identifiants ou paramètres, valeurs invalides et conflits de fournisseur sont refusés. Si les réglages changent ailleurs pendant une édition, recharger les valeurs avant d’enregistrer.
+
+Le niveau de raisonnement reste dans le sélecteur de modèle de DSH ; les autres politiques de compaction restent dans les presets de l’agent. Aucun serveur ni secret n’est embarqué. Désactiver ce bundle retire le fournisseur et empêche les conversations NInfer jusqu’à sa réactivation ; cela n’arrête pas le serveur GPU.

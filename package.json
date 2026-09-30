@@ -1,6 +1,6 @@
 {
   "name": "dsh-llm-ninfer",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "type": "module",
   "main": "lib/index.js",
@@ -11,7 +11,8 @@
       "default": "./lib/index.js"
     },
     "./package.json": "./package.json",
-    "./cordis.patch.yml": "./cordis.patch.yml"
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./client": "./lib/client.js"
   },
   "files": [
     "lib",
@@ -19,14 +20,17 @@
     "cordis.patch.yml"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/build-client.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.4",
     "@deepseek-ai/dsh-llm": "0.2.0-rc.1",
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.1",
-    "@deepseek-ai/dsh-attachment": "0.2.0-rc.1"
+    "@deepseek-ai/dsh-attachment": "0.2.0-rc.1",
+    "@deepseek-ai/schemastery": "3.18.4",
+    "@deepseek-ai/dsh-settings": "0.2.0-rc.1",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.5"
   },
   "dependencies": {
     "zod": "4.4.3",
@@ -43,7 +47,10 @@
     "@deepseek-ai/cordis": "4.0.4",
     "@deepseek-ai/dsh-llm": "0.2.0-rc.1",
     "@deepseek-ai/dsh-credentials": "0.2.0-rc.1",
-    "@deepseek-ai/dsh-attachment": "0.2.0-rc.1"
+    "@deepseek-ai/dsh-attachment": "0.2.0-rc.1",
+    "@deepseek-ai/schemastery": "3.18.4",
+    "@deepseek-ai/dsh-settings": "0.2.0-rc.1",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.5"
   },
   "repository": {
     "type": "git",
@@ -52,6 +59,14 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ],
+      "platform": "web"
     }
   }
 }
