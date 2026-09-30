@@ -14,10 +14,10 @@ Le fork qualifié utilise Cordis `4.0.4`. Ce peer doit pointer vers l'instance d
 - id: llm-ninfer
   config:
     provider: ninfer-local
-    baseURL: http://192.168.1.165:8888/v1
-    credentialRef: UNSLOTH_API_KEY
+    baseURL: http://127.0.0.1:8000/v1
+    credentialRef: NINFER_API_KEY
     models:
-      - id: huihui-ai/Huihui-Qwen3.8-27B-abliterated-NInfer-NVFP4Full
+      - id: your-model-id
         contextWindow: 150000
     contentReserve: 16384
     safetyMargin: 4096
