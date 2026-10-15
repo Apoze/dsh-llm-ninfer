@@ -68,3 +68,9 @@ Les changements s’appliquent aux nouveaux appels sans redémarrage. Un appel p
 Pour une installation existante, si `llm-ninfer` est configuré dans le patch global `DSH_HOME/cordis.patch.yml`, sauvegarder ce fichier puis déplacer cette entrée vers `DSH_HOME/profiles/<profil>/cordis.patch.yml` pour chaque profil utilisé. Conserver exactement ses valeurs et la référence de credential, puis redémarrer DSH. Le patch global a priorité sur les réglages du profil et bloque leur édition native. Les credentials restent communs ; les réglages de connexion deviennent propres à chaque profil.
 
 Le niveau de raisonnement reste dans le sélecteur de modèle de DSH ; les autres politiques de compaction restent dans les presets de l’agent. Aucun serveur ni secret n’est embarqué. Désactiver ce bundle retire le fournisseur et empêche les conversations NInfer jusqu’à sa réactivation ; cela n’arrête pas le serveur GPU.
+
+## DSH 0.2.1 compatibility
+
+This version targets DSH `0.2.1-alpha.4`; the manifest declares this tested runtime through `engines.dsh`. Earlier plugin versions remain available in Git history for DSH `0.2.0-rc.1`.
+
+Use the Apoze native fork: exact request inspection and bounded generation recovery require its prepared-request events. The upstream idle timeout does not replace these protections.
