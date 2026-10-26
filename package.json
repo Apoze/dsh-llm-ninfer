@@ -1,6 +1,6 @@
 {
   "name": "dsh-llm-ninfer",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "type": "module",
   "main": "lib/index.js",
@@ -25,11 +25,11 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.5-alpha.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-alpha.4",
-    "@deepseek-ai/dsh-credentials": "0.2.1-alpha.4",
-    "@deepseek-ai/dsh-attachment": "0.2.1-alpha.4",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-attachment": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5-alpha.2",
-    "@deepseek-ai/dsh-settings": "0.2.1-alpha.4",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.3",
     "@deepseek-ai/cordis-plugin-loader": "1.0.6-alpha.2"
   },
   "dependencies": {
@@ -37,8 +37,8 @@
     "openai": "6.40.0"
   },
   "engines": {
-    "node": "^22.19.0 || >=24.0.0",
-    "dsh": "0.2.1-alpha.4"
+    "node": ">=24.9.0",
+    "dsh": "0.2.1-rc.3"
   },
   "description": "Native NInfer request preparation for DeepSeek Harness",
   "license": "MIT",
@@ -46,11 +46,11 @@
     "typescript": "6.0.3",
     "@types/node": "22.20.0",
     "@deepseek-ai/cordis": "4.0.5-alpha.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-alpha.4",
-    "@deepseek-ai/dsh-credentials": "0.2.1-alpha.4",
-    "@deepseek-ai/dsh-attachment": "0.2.1-alpha.4",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-credentials": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-attachment": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5-alpha.2",
-    "@deepseek-ai/dsh-settings": "0.2.1-alpha.4",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.3",
     "@deepseek-ai/cordis-plugin-loader": "1.0.6-alpha.2"
   },
   "repository": {
