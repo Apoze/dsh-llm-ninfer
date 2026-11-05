@@ -65,6 +65,22 @@ test('native edits apply to new calls while a prepared call retains its endpoint
   assert.equal(prepared.model.defaultMaxTokens, 1024)
   assert.equal((await adapter.listModels('ninfer-local'))[0].defaultMaxTokens, 2048)
 })
+test('configured context caps a larger server and never enlarges a smaller server', async t => {
+  const f = await setup(t, (_req, res, body) => sse(res, body))
+  for (const [configured, effective] of [[64000, 64000], [262144, 150000]]) {
+    const adapter = new NinferAdapter(
+      { credentials: { resolve: async () => ({ value: 'fixture-key' }) } },
+      configSchema.parse({ baseURL: f.baseURL, credentialRef: 'TEST', models: [{ id: 'fixture', contextWindow: configured }] }),
+    )
+    const prepared = await adapter.prepareCall('ninfer-local', 'fixture')
+    const inspection = await prepared.inspect(f.options)
+    assert.equal(inspection.contextWindow, effective)
+    assert.equal(inspection.maxOutputTokens, effective - native.input_tokens - 4096)
+    for await (const _ of prepared.stream(f.options)) {}
+    assert.equal(f.requests.at(-1).body.max_tokens, effective - native.input_tokens - 4096)
+  }
+})
+
 function sse(
   res,
   body,

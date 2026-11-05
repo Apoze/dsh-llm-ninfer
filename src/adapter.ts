@@ -61,7 +61,7 @@ export class NinferAdapter extends LlmAdapter {
   override async listModels(provider: string) {
     return Promise.all(this.settings.models.map((m) => this.resolveModel(provider, m.id)))
   }
-  override async resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
+  override async resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo & { context: { contextWindow: number } }> {
     const entry = this.settings.models.find((m) => m.id === model)
     if (!entry) throw new LlmError(`Model ${model} is not configured for NInfer`, 'UNKNOWN_MODEL')
     return {
@@ -103,7 +103,7 @@ export class NinferAdapter extends LlmAdapter {
       if (key !== undefined && actual !== key)
         throw new LlmError('Counted request changed before dispatch', 'INVALID_PREPARED_CALL')
       key = actual
-      return (pending ??= this.prepareRequest(client, options))
+      return (pending ??= this.prepareRequest(client, options, modelInfo.context.contextWindow))
     }
     return {
       model: modelInfo,
@@ -115,7 +115,7 @@ export class NinferAdapter extends LlmAdapter {
     const call = await this.prepareCall(options.provider, options.model, options.signal)
     yield* call.stream(options)
   }
-  private async prepareRequest(client: OpenAI, options: GenerateOptions): Promise<Prepared> {
+  private async prepareRequest(client: OpenAI, options: GenerateOptions, configuredContext: number): Promise<Prepared> {
     const body = await prepareBody(this.ctx, options)
     let raw: unknown
     try {
@@ -140,12 +140,13 @@ export class NinferAdapter extends LlmAdapter {
         'NInfer must configure a bounded thinking budget for this route',
         'NINFER_THINKING_UNBOUNDED',
       )
-    const available = count.context_window - count.input_tokens - this.settings.safetyMargin
+    const contextWindow = Math.min(configuredContext, count.context_window)
+    const available = contextWindow - count.input_tokens - this.settings.safetyMargin
     const maxOutputTokens = Math.min(options.maxTokens ?? Infinity, available)
     const inspection: LlmRequestInspection = Object.freeze({
       instanceId: count.instance_id,
       inputTokens: count.input_tokens,
-      contextWindow: count.context_window,
+      contextWindow,
       thinkingTokens: count.thinking_budget,
       thinkingClosureTokens: count.thinking_closure_tokens,
       maxOutputTokens,

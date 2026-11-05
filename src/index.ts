@@ -27,9 +27,9 @@ export function apply(ctx: Context, config: Volatile<Options>): void {
   const adapter = new LiveNinferAdapter(ctx, config)
   let registration: AdapterRegistrationHandle | undefined
   let provider: string | undefined
-  ctx.on('internal/config', function (_raw, next) {
+  ctx.on('internal/config', (fiber, next) => {
     const raw = next()
-    if (this !== ctx.fiber) return raw
+    if (fiber !== ctx.fiber) return raw
     validateConfiguration(raw)
     const candidate = Config(raw as Options).get()
     if (candidate.provider !== provider && ctx.llm.listProviders().some(row => row.id === candidate.provider)) {

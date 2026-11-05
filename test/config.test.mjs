@@ -42,10 +42,12 @@ test('volatile route edits register, rename and withdraw without restarting; con
   apply(ctx, { get: () => value })
   function edit(patch) {
     const candidate = { ...value, ...patch }
-    hooks.get('internal/config').call(fiber, candidate, () => candidate)
+    hooks.get('internal/config')(fiber, () => candidate)
     value = Config(candidate).get()
     hooks.get('loader/volatile-update')()
   }
+  const unrelated = { baseURL: 'file:///not-an-ninfer-config' }
+  assert.equal(hooks.get('internal/config')({}, () => unrelated), unrelated)
   assert.equal(registrations, 0)
   edit({ baseURL: 'http://localhost:8000/v1', models: [{ id: 'test', contextWindow: 1000 }] })
   assert.ok(routes.has('ninfer-local'))

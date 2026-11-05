@@ -6,9 +6,9 @@ Le plugin possède la transformation des messages, outils et images en un seul c
 
 ## Installation
 
-Construire DSH et ce plugin avec Node 22.19+ ou 24+. Les dépendances Cordis et DSH doivent résoudre les mêmes instances que le runtime hôte. Installer le paquet construit dans le profil ; ne pas éditer une copie de son cache. La politique complémentaire est `dsh-generation-recovery`.
+Construire DSH et ce plugin avec Node 24.9+. Les dépendances Cordis et DSH doivent résoudre les mêmes instances que le runtime hôte. Installer le paquet construit dans le profil ; ne pas éditer une copie de son cache. La politique complémentaire est `dsh-generation-recovery`.
 
-Le fork qualifié utilise Cordis `4.0.4`. Ce peer doit pointer vers l'instance du fork compilé, comme les peers DSH.
+Le fork qualifié utilise Cordis `4.1.0`. Ce peer doit pointer vers l'instance du fork compilé, comme les peers DSH.
 
 ```yaml
 - id: llm-ninfer
@@ -25,7 +25,7 @@ Le fork qualifié utilise Cordis `4.0.4`. Ce peer doit pointer vers l'instance d
     requestTimeoutMs: 1800000
 ```
 
-Ne pas enregistrer simultanément cette route sous `llm-pi-ai`. `credentialRef` désigne une référence dans le service credentials existant ; aucune clé dans ce fichier. La capacité du serveur comptée fait autorité. Le contrôle des capacités a lieu au premier appel préparé et sur chaque préparation suivante, sans génération de démarrage.
+Ne pas enregistrer simultanément cette route sous `llm-pi-ai`. `credentialRef` désigne une référence dans le service credentials existant ; aucune clé dans ce fichier. La capacité effective est le minimum entre `models[].contextWindow` et la capacité du serveur comptée : un profil 64K reste limité à 64K même si le serveur est lancé avec un contexte plus grand. Le contrôle des capacités a lieu au premier appel préparé et sur chaque préparation suivante, sans génération de démarrage.
 
 ## Budget et terminaison
 
@@ -69,8 +69,8 @@ Pour une installation existante, si `llm-ninfer` est configuré dans le patch gl
 
 Le niveau de raisonnement reste dans le sélecteur de modèle de DSH ; les autres politiques de compaction restent dans les presets de l’agent. Aucun serveur ni secret n’est embarqué. Désactiver ce bundle retire le fournisseur et empêche les conversations NInfer jusqu’à sa réactivation ; cela n’arrête pas le serveur GPU.
 
-## DSH 0.2.1 compatibility
+## DSH 0.2.2 compatibility
 
-This version targets DSH `0.2.1-rc.3`; the manifest declares this tested runtime through `engines.dsh`. Earlier plugin versions remain available in Git history for DSH `0.2.0-rc.1`.
+This version targets DSH `0.2.2-rc.1`; the manifest declares this tested runtime through `engines.dsh`. Earlier plugin versions remain available in Git history for DSH `0.2.0-rc.1`.
 
 Use the Apoze native fork: exact request inspection and bounded generation recovery require its prepared-request events. The upstream idle timeout does not replace these protections.
