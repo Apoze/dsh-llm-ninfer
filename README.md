@@ -1,6 +1,6 @@
 # dsh-llm-ninfer
 
-Adaptateur DSH pour le protocole OpenAI Chat de NInfer avec comptage natif. Nécessite la branche DSH `integration/dsh-0.2.0-rc.1-native` basée sur `0.2.0-rc.1` et la version NInfer qui expose les diagnostics v1. Une version publiée portant seulement le même numéro sans ces changements ne suffit pas.
+Adaptateur DSH pour le protocole OpenAI Chat de NInfer avec comptage natif. Nécessite la branche DSH `integration/dsh-0.2.0-rc.1-native` basée sur `0.2.2-rc.1` et la version NInfer qui expose les diagnostics v1. Une version publiée portant seulement le même numéro sans ces changements ne suffit pas.
 
 Le plugin possède la transformation des messages, outils et images en un seul corps HTTP. Il compte ce corps via `/v1/chat/completions/count_tokens`, fige les pièces jointes en données, puis utilise la même préparation pour générer. Il ne réimplémente ni le tokenizer ni les outils. Le SDK OpenAI possède HTTP/SSE ; les nouvelles tentatives appartiennent à DSH.
 
@@ -44,9 +44,9 @@ npm test
 
 Les tests ouvrent un vrai serveur HTTP et font passer le SDK OpenAI dans ses chemins SSE, annulation, erreur 409 et incohérence de compte. Ils vérifient les objets émis, notamment l'absence d'outil exécutable, sans rechercher des mots dans le code source. Les essais GPU et clients complets sont consignés dans le rapport de qualification du chantier.
 
-## Compatibilité DSH 0.2.0-rc.1
+## Historique : DSH 0.2.0-rc.1
 
-Cette version cible les contrats V4 de DSH et Cordis 4.0.4. L’installation locale utilise le fork natif NInfer basé sur le tag officiel `dsh-v0.2.0-rc.1`. Les anciens plugins de récupération finale ne doivent pas être activés en parallèle avec `dsh-generation-recovery`.
+Les premières versions ciblaient les contrats V4 de DSH et Cordis 4.0.4, sur le fork natif basé sur `dsh-v0.2.0-rc.1`. La version actuelle cible DSH 0.2.2-rc.1 et Cordis 4.1.0. Les anciens plugins de récupération finale ne doivent pas être activés en parallèle avec `dsh-generation-recovery`.
 
 Pour développer contre le fork natif : installer les dépendances, puis exécuter `DSH_NATIVE_ROOT=/chemin/du/fork node scripts/link-native-core.mjs` avant la compilation. Les liens restent locaux dans `node_modules` ; les manifests et fichiers de verrouillage restent portables.
 
