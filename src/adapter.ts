@@ -128,18 +128,12 @@ export class NinferAdapter extends LlmAdapter {
     }
     const parsed = countSchema.safeParse(raw)
     if (!parsed.success)
-      throw new LlmError(
-        'NInfer does not expose a valid versioned native token count',
-        'NINFER_COUNT_UNAVAILABLE',
-      )
+      throw LlmError.fromFailure({ message: 'NInfer does not expose a valid versioned native token count', code: 'NINFER_COUNT_UNAVAILABLE' })
     const count = parsed.data
     if (count.model !== options.model)
-      throw new LlmError('NInfer model changed during preparation', 'NINFER_MODEL_CHANGED')
+      throw LlmError.fromFailure({ message: 'NInfer model changed during preparation', code: 'NINFER_MODEL_CHANGED' })
     if (count.thinking_budget === null)
-      throw new LlmError(
-        'NInfer must configure a bounded thinking budget for this route',
-        'NINFER_THINKING_UNBOUNDED',
-      )
+      throw LlmError.fromFailure({ message: 'NInfer must configure a bounded thinking budget for this route', code: 'NINFER_THINKING_UNBOUNDED' })
     const contextWindow = Math.min(configuredContext, count.context_window)
     const available = contextWindow - count.input_tokens - this.settings.safetyMargin
     const maxOutputTokens = Math.min(options.maxTokens ?? Infinity, available)
@@ -191,21 +185,15 @@ export class NinferAdapter extends LlmAdapter {
         if (native.ninfer !== undefined) {
           diagnostic = diagnosticSchema.parse(native.ninfer)
           if (diagnostic.instance_id !== inspection.instanceId)
-            throw new LlmError('NInfer restarted after token counting', 'NINFER_INSTANCE_CHANGED')
+            throw LlmError.fromFailure({ message: 'NInfer restarted after token counting', code: 'NINFER_INSTANCE_CHANGED' })
           if (
             diagnostic.input_tokens !== inspection.inputTokens ||
             diagnostic.effective_output_tokens > inspection.maxOutputTokens
           )
-            throw new LlmError(
-              'NInfer diagnostics differ from the prepared request budget',
-              'NINFER_COUNT_MISMATCH',
-            )
+            throw LlmError.fromFailure({ message: 'NInfer diagnostics differ from the prepared request budget', code: 'NINFER_COUNT_MISMATCH' })
         }
         if (raw.usage && raw.usage.prompt_tokens !== inspection.inputTokens)
-          throw new LlmError(
-            'NInfer generation input differs from its prepared token count',
-            'NINFER_COUNT_MISMATCH',
-          )
+          throw LlmError.fromFailure({ message: 'NInfer generation input differs from its prepared token count', code: 'NINFER_COUNT_MISMATCH' })
         if (raw.usage)
           yield {
             type: 'usage',
@@ -254,11 +242,11 @@ export class NinferAdapter extends LlmAdapter {
         block: index === 0 ? { type: 'reasoning', text } : { type: 'text', text },
       }
     if (!finish) throw new LlmError('NInfer stream closed without a terminal reason', 'TRANSPORT')
-    if (!diagnostic) throw new LlmError('NInfer omitted terminal diagnostics', 'NINFER_DIAGNOSTICS_MISSING')
+    if (!diagnostic) throw LlmError.fromFailure({ message: 'NInfer omitted terminal diagnostics', code: 'NINFER_DIAGNOSTICS_MISSING' })
     if (diagnostic.cause === 'cancelled') throw new LlmError('NInfer cancelled the generation', 'ABORTED')
     const limited = diagnostic.cause === 'output_limit' || diagnostic.cause === 'context_capacity'
     if ((finish === 'length') !== limited)
-      throw new LlmError('NInfer terminal reason contradicts its diagnostics', 'NINFER_PROTOCOL_ERROR')
+      throw LlmError.fromFailure({ message: 'NInfer terminal reason contradicts its diagnostics', code: 'NINFER_PROTOCOL_ERROR' })
     if (finish === 'length') {
       const diagnostics: GenerationDiagnostics = {
         cause: diagnostic.cause === 'context_capacity' ? 'context-capacity' : 'output-limit',
@@ -273,17 +261,17 @@ export class NinferAdapter extends LlmAdapter {
       return
     }
     if (diagnostic.tool_status === 'invalid' || diagnostic.tool_status === 'incomplete')
-      throw new LlmError('NInfer returned non-executable native tool output', 'invalid_model_output')
+      throw LlmError.fromFailure({ message: 'NInfer returned non-executable native tool output', code: 'invalid_model_output' })
     if (finish !== 'stop' && finish !== 'tool_calls')
-      throw new LlmError('NInfer returned an unsupported terminal reason', 'NINFER_PROTOCOL_ERROR')
+      throw LlmError.fromFailure({ message: 'NInfer returned an unsupported terminal reason', code: 'NINFER_PROTOCOL_ERROR' })
     if (
       calls.size > 0 !== (diagnostic.tool_status === 'complete') ||
       calls.size > 0 !== (finish === 'tool_calls')
     )
-      throw new LlmError('NInfer tool batch contradicts its terminal diagnostics', 'NINFER_PROTOCOL_ERROR')
+      throw LlmError.fromFailure({ message: 'NInfer tool batch contradicts its terminal diagnostics', code: 'NINFER_PROTOCOL_ERROR' })
     for (const [order, call] of calls) {
       if (!call.id || !call.name)
-        throw new LlmError('NInfer returned an incomplete tool identity', 'invalid_model_output')
+        throw LlmError.fromFailure({ message: 'NInfer returned an incomplete tool identity', code: 'invalid_model_output' })
       const index = order + 2
       const id = ToolCallId(call.id)
       yield { type: 'block-start', index, blockType: 'tool-call' }
@@ -315,7 +303,7 @@ function transportError(error: unknown): Error {
             : (error.status ?? 0) >= 500
               ? 'SERVER'
               : (error.code ?? 'PROVIDER_ERROR')
-    return new LlmError(error.message, code, { ...(error.status ? { status: error.status } : {}) })
+    return LlmError.fromFailure({ message: error.message, code, ...(error.status ? { status: error.status } : {}) })
   }
   return error instanceof Error ? error : new Error(String(error))
 }
